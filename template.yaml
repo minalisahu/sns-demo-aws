@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SNS Demo with SAM and Python
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: python3.12
+
+Resources:
+  SnsPublishFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SNS-DEMO
+      Handler: app.lambda_handler
+      CodeUri: hello_world/
+      Events:
+        ApiTrigger:
+          Type: Api
+          Properties:
+            Path: /publish
+            Method: post
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref MySNSTopic
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: sns:Publish
+              Resource: !Ref MySNSTopic
+
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: SNS DEMO
+      TopicName: SNS-DEMO
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/publish"
